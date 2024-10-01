@@ -22,10 +22,8 @@ class PessoaFisica(Cliente):
         self._data_nascimento = data_nascimento
 
     def __str__(self):
-        return f"""
-        Nome: {self._nome} \t CPF: {self._cpf} \t Data Nasc: {self._data_nascimento}
-        Endereço: {self._endereco}
-        """
+        return f"""\nNome: {self._nome} \t CPF: {self._cpf} 
+        \t Data Nasc: {self._data_nascimento} \t Endereço: {self._endereco}"""
 
 class Conta:
     def __init__(self, numero, cliente):
@@ -84,19 +82,26 @@ class ContaCorrente(Conta):
 
     def sacar(self, valor):        
         numero_saques = 0
-        
+        x = 0
         for transacao in self.historico.transacoes:
-            if transacao["tipo"] == Saque.__name__:
-                numero_saques +1
+            print(transacao['tipo'])
+            x+=1
+            print(x)
+            if transacao["tipo"] == "Saque":
+                numero_saques +=1
+                print("numero de saques = ",numero_saques)
+            else:
+                print(f"o tipo não é saque === {transacao['tipo']}")
 
+        print("numero de saques FINAL = ",numero_saques)
         excedeu_limite = valor > self._limite
         excedeu_saques = numero_saques >= self._limite_saques
 
         if excedeu_limite:
-            print("\n@@@ Operação falhou! O valor do saque excede o limite. @@@")
+            mensagem_erro("Operação falhou! O valor do saque excede o limite")
 
         elif excedeu_saques:
-            print("\n@@@ Operação falhou! Número máximo de saques excedido. @@@")
+            mensagem_erro("Operação falhou! Número máximo de saques excedido.")
 
         else:
             return super().sacar(valor)
@@ -104,9 +109,8 @@ class ContaCorrente(Conta):
         return False
     
     def __str__(self):
-        return f"""        
-        \t Ag: {self.agencia} \tC/C: {self.numero} """
-
+        return f"""\t Ag: {self.agencia} \tC/C: {self.numero}"""
+    
 
 class Historico:
     def __init__(self):
@@ -114,7 +118,7 @@ class Historico:
 
     @property
     def transacoes(self):
-        return self.transacoes
+        return self._transacoes
 
     def adicionar_transacao(self, transacao):
         agora = datetime.now().strftime("%H:%M:%S")
@@ -186,7 +190,7 @@ def menu_inicial():
     return opcao
 
 def criar_cliente(clientes):
-    print("##### CRIANDO UM NOVO CLIENTE #####")
+    print("\n##### CRIANDO UM NOVO CLIENTE #####")
     cpf = input("Digite o CPF do cliente: ")
     if verifica_cliente(cpf, clientes) :
         mensagem_erro("Usuário já existe no sistema")
@@ -198,7 +202,7 @@ def criar_cliente(clientes):
     cliente = PessoaFisica(nome, cpf, data_nascimento, endereco)
     clientes.append(cliente)
 
-    print(" === Cliente criado com sucesso! ===")        
+    print("\n === Cliente criado com sucesso! ===")        
 
 def verifica_cliente(cpf, clientes):    
     cliente_encontrado = False
@@ -208,7 +212,7 @@ def verifica_cliente(cpf, clientes):
     return cliente_encontrado
 
 def criar_conta(numero_conta, clientes, contas):
-    print("##### ABRINDO UMA NOVA CONTA #####")
+    print("\n##### ABRINDO UMA NOVA CONTA #####")
     cpf = input("Digite o CPF do titular da conta: ")
     cliente = verifica_cliente(cpf, clientes)
     if cliente :        
@@ -231,7 +235,7 @@ def seleciona_conta(numero_conta, contas):
     conta = verifica_conta(numero_conta, contas)
     if conta:        
         nome_cliente = conta._cliente._nome        
-        opcao = input(f"\n\tO titular da Conta Selecionada é {nome_cliente}.\n\tConfirma? (s/n)")
+        opcao = input(f"\n\tO titular da Conta Selecionada é {nome_cliente}.\n\t Confirma? (s/n): ")
 
         if opcao == 's':                   
             return conta
@@ -243,7 +247,7 @@ def seleciona_conta(numero_conta, contas):
         return False
 
 def efetuar_transacao(tipo, contas):
-    numero_conta = input("Digite o número da conta: ")
+    numero_conta = input("\nDigite o número da conta: ")
     conta = seleciona_conta(numero_conta, contas)
     if not conta:
         return False
@@ -281,16 +285,16 @@ def imprimir_extrato(contas):
     if not conta:
         return False
     
-    print(f"=== EXTRATO PARA A CONTA Nº {conta._numero}")
+    print(f"\n=== EXTRATO PARA A CONTA Nº {conta._numero}")
     transacoes = conta.historico.transacoes
-    extrato = ""
+    extrato = "\n"
 
     if not transacoes:
         mensagem_erro("Não foram feitas movimentações para a conta")
         return False
     
     for transacao in transacoes:
-        extrato += f"\n{transacao['tipo']}:\n\tR$ {transacao['valor']:.2f}"
+        extrato += f"\n{transacao['data']} \t {transacao['tipo']}\t\tR$ {transacao['valor']:.2f}"
 
     print(extrato)
     print(f"\nSaldo: \t\t R$ {conta.saldo:.2f}")
